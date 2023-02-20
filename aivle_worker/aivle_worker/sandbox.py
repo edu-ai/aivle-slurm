@@ -69,7 +69,7 @@ def run_with_venv(env_name: str, command: List[str], task_id: int, job_id: int, 
     bash_file_name = command[-1]
     with open(os.path.join(home, bash_file_name), "w") as fh:
         fh.writelines("#!/bin/bash\n")
-        fh.writelines("#SBATCH --job-name=job\n")
+        fh.writelines("#SBATCH --job-name=%s_%s\n" % (env_name, str(job_id)))
         # assume it is specified in seconds originally in Django
         fh.writelines("#SBATCH --time=%s\n" % (str(time_limit / 60)))
         fh.writelines("#SBATCH --ntasks=1\n")
