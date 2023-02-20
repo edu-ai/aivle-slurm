@@ -16,8 +16,10 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 PROFILE_PATH = os.path.join(package_directory, "profiles", "aivle-base.profile")  # "./profiles/aivle-base.profile"
 CREATE_VENV_PATH = os.path.join(package_directory, "scripts", "create-venv.sh")  # "./scripts/create-venv.sh"
 if os.getenv("TEMP_FOLDER_ROOT") is None:
+    os.mkdir(tempfile.gettempdir())
     TEMP_FOLDER_ROOT = os.path.join(tempfile.gettempdir(), "aivle-worker")
 else:
+    os.mkdir(os.getenv("TEMP_FOLDER_ROOT"))
     TEMP_FOLDER_ROOT = os.path.join(os.getenv("TEMP_FOLDER_ROOT"), "aivle-worker")
 if os.getenv("GRADER_GYM_LOCATION") is None:
     raise MissingDotEnvField("GRADER_GYM_LOCATION")
