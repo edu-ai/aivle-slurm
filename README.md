@@ -35,6 +35,7 @@
 3. `python -m venv <task_name>`
 4. `source <task_name>/bin/activate`
 5. Install aiVLE Grader, aiVLE Gym and their required dependencies (locally with `--use-pep517`)
+6. Add task function to `aivle_worker/aivle_worker/tasks.py`
 
 
 ## aiVLE Web Frontend
