@@ -37,8 +37,7 @@ def run_submission(s: Submission, job_id: int, celery_task_id: str, force: bool 
     env_name = create_venv(os.path.join(temp_grading_folder, "requirements.txt"), force=force)
     # NOTE: replaced with Slurm job submission
     error_type = run_with_venv(env_name=env_name,
-                            # command=["srun", "./bootstrap.sh"],
-                            command=["bash", "./bootstrap.sh"],
+                            command=["srun", "./bootstrap.sh"],
                             home=temp_grading_folder,
                             rlimit=task_info["ram_limit"],
                             vram_limit=task_info["vram_limit"],
