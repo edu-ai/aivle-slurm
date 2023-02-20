@@ -1,0 +1,6 @@
+.eggs/*
+aivle_worker.egg-info/
+build/*
+**/__pycache__/*
+examples/elevator/*
+.env
