@@ -66,7 +66,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['aivle-api.leotan.cn', '127.0.0.1', 'localhost', '*']
+# ALLOWED_HOSTS = ['aivle-api.leotan.cn', '127.0.0.1', 'localhost', '*']
+ALLOWED_HOSTS = ['cs5446.comp.nus.edu.sg', '127.0.0.1', 'localhost']
 CORS_ALLOW_ALL_ORIGINS = True
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 

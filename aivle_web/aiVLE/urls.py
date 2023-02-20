@@ -21,14 +21,18 @@ from django.urls import path, include, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import DefaultRouter, SimpleRouter
+from django.conf import settings
 
 from app import views
 from app.apis import TaskViewSet, SubmissionViewSet, CourseViewSet, InvitationViewSet, CourseWhitelistViewset, \
     ParticipationViewSet
 from scheduler.apis import JobViewSet, QueueViewSet
 
-router = DefaultRouter()
+if settings.DEBUG:
+    router = DefaultRouter()
+else:
+    router = SimpleRouter()
 router.register(r'jobs', JobViewSet, basename="jobs")
 router.register(r'tasks', TaskViewSet, basename="tasks")
 router.register(r'submissions', SubmissionViewSet, basename="submissions")
