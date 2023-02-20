@@ -1,9 +1,9 @@
 # aiVLE for Slurm
 
 ## aiVLE Web Backend
-1. `cd aivle_web_slurm`
-2. `python -m venv aivle_web`
-3. `source aivle_web/bin/activate`
+1. `cd aivle_web`
+2. `python -m venv aivle_web_venv`
+3. `source aivle_web_venv/bin/activate`
 4. Follow "Setup" instructions at https://github.com/edu-ai/aivle-web 
 5. Follow "Deploying Backend" instructions at https://github.com/edu-ai/aivle-docs/blob/master/docs/dev-guide/deployment-guide.md
 6. Make sure "Participations" is filled in for object permissions for tasks
@@ -12,9 +12,9 @@
 
 ## aiVLE Worker
 1. Download the appropriate grader and gym libraries
-2. `cd aivle_worker_slurm`
-3. `python -m venv aivle_worker`
-4. `source aivle_worker/bin/activate`
+2. `cd aivle_worker`
+3. `python -m venv aivle_worker_venv`
+4. `source aivle_worker_venv/bin/activate`
 5. `python -m pip install .`
 6. Follow "Getting Started" instructions at https://github.com/edu-ai/aivle-worker
 7. Add `TEMP_FOLDER_ROOT` to `.env` file and set it to be the directory to store the job submission files (make sure you have execute permissions in this directory to run `bootstrap.sh`)
