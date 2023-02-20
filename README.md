@@ -18,6 +18,7 @@
 
 
 ## aiVLE Worker
+### Deployment
 1. Download the appropriate grader and gym libraries
 2. `cd aivle_worker`
 3. `python -m venv aivle_worker_venv`
@@ -25,9 +26,16 @@
 5. `python -m pip install .`
 6. Follow "Getting Started" instructions at https://github.com/edu-ai/aivle-worker
 7. Add `TEMP_FOLDER_ROOT` to `.env` file and set it to be the directory to store the job submission files (make sure you have execute permissions in this directory to run `bootstrap.sh`)
-8. Add `GRADER_GYM_LOCATION` (without trailing /) to `.env` file and set it to the directory containing BOTH the grader and gym libraries
-9. Get `ACCESS_TOKEN` using the aivLE Web admin backend under "Tokens" (make sure the user with the token has admin role for "Participations" in intended "Courses")
-10. Run server with `python -m aivle_worker`
+8. Get `ACCESS_TOKEN` using the aivLE Web admin backend under "Tokens" (make sure the user with the token has admin role for "Participations" in intended "Courses")
+9. Run server with `python -m aivle_worker`
+
+### New Task Setup
+1. Add new task to "Tasks" with task_name
+2. `cd TEMP_FOLDER_ROOT/venvs/`
+3. `python -m venv <task_name>`
+4. `source <task_name>/bin/activate`
+5. Install aiVLE Grader, aiVLE Gym and their required dependencies (locally with `--use-pep517`)
+
 
 ## aiVLE Web Frontend
 1. `git clone https://github.com/le0tan/aivle-fe`

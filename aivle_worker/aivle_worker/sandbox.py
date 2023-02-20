@@ -8,7 +8,7 @@ from typing import List
 
 from .apis import ERROR_TIME_LIMIT_EXCEEDED, ERROR_RUNTIME_ERROR
 from .constants import SANDBOX_ONLY_TASK_ID
-from .settings import PROFILE_PATH, TEMP_VENV_FOLDER, CREATE_VENV_PATH, ZMQ_PORT, GRADER_GYM_LOCATION
+from .settings import PROFILE_PATH, TEMP_VENV_FOLDER, CREATE_VENV_PATH, ZMQ_PORT
 
 logger = logging.getLogger("root")
 
@@ -29,7 +29,8 @@ def create_venv(req_path: str, force: bool = False) -> str:
     if os.path.exists(dst_path) and not force:
         return env_name
     subprocess.call(["chmod", "u+x", CREATE_VENV_PATH], stderr=subprocess.DEVNULL)
-    cmd = ["srun", "--time=10", CREATE_VENV_PATH, dst_path, req_path, GRADER_GYM_LOCATION]
+    # cmd = ["srun", "--time=10", CREATE_VENV_PATH, dst_path, req_path, GRADER_GYM_LOCATION]
+    cmd = ["srun", "--time=10", CREATE_VENV_PATH, dst_path, req_path]
     # Reference: https://stackoverflow.com/a/4417735
     popen = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE, universal_newlines=True)
@@ -62,14 +63,15 @@ def run_with_venv(env_name: str, command: List[str], task_id: int, job_id: int, 
     :return: error type (defined as constants in api)
     """
     # if task_id is -1, then we're running with sandbox only, no need to communicate with warden
-    sandbox_only = task_id == SANDBOX_ONLY_TASK_ID
-    # NOTE: create bash file for Slurm job
+    # sandbox_only = task_id == SANDBOX_ONLY_TASK_ID
+    # create bash file for Slurm job
     # TODO: vram_limit for Slurm
     bash_file_name = command[-1]
     with open(os.path.join(home, bash_file_name), "w") as fh:
         fh.writelines("#!/bin/bash\n")
         fh.writelines("#SBATCH --job-name=job\n")
-        fh.writelines("#SBATCH --time=%s\n" % (str(time_limit)))
+        # assume it is specified in seconds originally in Django
+        fh.writelines("#SBATCH --time=%s\n" % (str(time_limit / 60)))
         fh.writelines("#SBATCH --ntasks=1\n")
         fh.writelines("#SBATCH --cpus-per-task=1\n")
         fh.writelines("#SBATCH --mem=%s\n" % (str(rlimit)))
@@ -78,25 +80,12 @@ def run_with_venv(env_name: str, command: List[str], task_id: int, job_id: int, 
         fh.writelines("#SBATCH --mail-user=samsonyu@comp.nus.edu.sg\n")
         # change environment running
         fh.writelines("source %s/bin/activate\n" % os.path.join(TEMP_VENV_FOLDER, env_name))
-        fh.writelines("python3 %s" % (os.path.join(home, "grader.py")))
+        fh.writelines("python %s" % (os.path.join(home, "grader.py")))
         fh.close()
-    # full_cmd = ["firejail",
-    #             f"--profile={PROFILE_PATH}",
-    #             "--read-only=/tmp",
-    #             f"--env=PATH={os.path.join(TEMP_VENV_FOLDER, env_name)}/bin:/usr/bin",
-    #             # f"--output={os.path.join(home, 'stdout.log')}",
-    #             f"--output-stderr={os.path.join(home, 'stdout.log')}", ]
-    # if rlimit > 0:
-    #     full_cmd.append(f"--rlimit-as={rlimit * 1024 * 1024}")
-    # if home != "":
-    #     full_cmd.append(f"--private={home}")
-    # else:
-    #     full_cmd.append("--private")
-    # full_cmd.extend(command)
     #logger.debug(f"[SANDBOX | run_with_venv] command: {' '.join(full_cmd)}")
     # add log to follow Firejail
     logfile = open(os.path.join(home, "stdout.log"), "w")
-    subprocess.call(["chmod", "u+x", home], stderr=subprocess.DEVNULL)
+    subprocess.call(["chmod", "u+x", os.path.join(home, "bootstrap.sh")], stderr=subprocess.DEVNULL)
     full_cmd = ["srun", os.path.join(home, "bootstrap.sh")]
     proc = subprocess.Popen(full_cmd, stdout=logfile, stderr=logfile, universal_newlines=True)
     # NOTE: remove need for monitoring and warden process communication

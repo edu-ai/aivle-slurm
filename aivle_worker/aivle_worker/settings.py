@@ -23,9 +23,9 @@ else:
     if not os.path.isdir(os.getenv("TEMP_FOLDER_ROOT")):
         os.mkdir(os.getenv("TEMP_FOLDER_ROOT"))
     TEMP_FOLDER_ROOT = os.path.join(os.getenv("TEMP_FOLDER_ROOT"), "aivle-worker")
-if os.getenv("GRADER_GYM_LOCATION") is None:
-    raise MissingDotEnvField("GRADER_GYM_LOCATION")
-GRADER_GYM_LOCATION = os.getenv("GRADER_GYM_LOCATION")
+# if os.getenv("GRADER_GYM_LOCATION") is None:
+#     raise MissingDotEnvField("GRADER_GYM_LOCATION")
+# GRADER_GYM_LOCATION = os.getenv("GRADER_GYM_LOCATION")
 if not os.path.isdir(TEMP_FOLDER_ROOT):
     os.mkdir(TEMP_FOLDER_ROOT)
 TEMP_VENV_FOLDER = os.path.join(TEMP_FOLDER_ROOT, "venvs")
