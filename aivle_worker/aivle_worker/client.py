@@ -70,10 +70,10 @@ def run_submission(s: Submission, job_id: int, celery_task_id: str, force: bool 
     if ok:
         return ExecutionOutput(ok=True, raw=stdout_log, result=result, error=None)
     else:
-        if "oom-kill" in stdout_log[-1]:
-            return ExecutionOutput(ok=False, raw=stdout_log, result=None, error=ERROR_MEMORY_LIMIT_EXCEEDED)
-        elif "TIME LIMIT" in stdout_log[0]:
+        if "TIME LIMIT" in stdout_log[0]:
             return ExecutionOutput(ok=False, raw=stdout_log, result=None, error=ERROR_TIME_LIMIT_EXCEEDED)
+        elif "oom-kill" in stdout_log[-1]:
+            return ExecutionOutput(ok=False, raw=stdout_log, result=None, error=ERROR_MEMORY_LIMIT_EXCEEDED)
         if error_type is not None:
             return ExecutionOutput(ok=False, raw=stdout_log, result=None, error=error_type)
         else:
