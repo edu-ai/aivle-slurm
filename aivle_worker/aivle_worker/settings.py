@@ -54,6 +54,14 @@ FULL_WORKER_NAME = f"{WORKER_NAME}@{socket.gethostname()}"
 
 # Monitor config
 ZMQ_PORT = os.getenv("ZMQ_PORT") if os.getenv("ZMQ_PORT") is not None else "15921"
+if os.getenv("MAX_PROCESS_NUM") is not None:
+    MAX_PROCESS_NUM = int(os.getenv("MAX_PROCESS_NUM"))
+else:
+    MAX_PROCESS_NUM = None
+if os.getenv("PROCESS_BUFFER") is not None:
+    PROCESS_BUFFER = int(os.getenv("PROCESS_BUFFER"))
+else:
+    PROCESS_BUFFER = 0
 
 
 def update_queue(val: str):

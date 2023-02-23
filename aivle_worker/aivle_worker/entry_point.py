@@ -1,10 +1,10 @@
 from multiprocessing import Process
 
-# from .apis import get_queue_info
+from .apis import get_queue_info
 from .client import run_submission
 from .constants import SANDBOX_ONLY_TASK_ID
 from .models import Submission
-# from .monitor import start_monitor, start_warden
+from .monitor import start_monitor, start_warden
 from .settings import CELERY_QUEUE, CELERY_CONCURRENCY
 from .tasks import app
 
@@ -29,14 +29,13 @@ def start_worker():
 
 
 def start():
-    # NOTE: might need to get queue info still
-    # queue = get_queue_info(CELERY_QUEUE)
-    # monitor_process = Process(target=start_monitor, args=(queue,))
+    queue = get_queue_info(CELERY_QUEUE)
+    monitor_process = Process(target=start_monitor, args=(queue,))
     worker_process = Process(target=start_worker)
     # warden_process = Process(target=start_warden)
-    # monitor_process.start()
+    monitor_process.start()
     # warden_process.start()
     worker_process.start()
-    # monitor_process.join()
+    monitor_process.join()
     # warden_process.join()
     worker_process.join()

@@ -7,79 +7,94 @@ from py3nvml.py3nvml import NVMLError, nvmlInit, nvmlDeviceGetCount, nvmlDeviceG
     nvmlDeviceGetMemoryInfo, nvmlDeviceGetComputeRunningProcesses
 
 from .apis import QueueInfo, stop_consuming, resume_consuming, update_job_error, ERROR_VRAM_LIMIT_EXCEEDED
-from .settings import ZMQ_PORT
+from .settings import ZMQ_PORT, MAX_PROCESS_NUM, PROCESS_BUFFER, CELERY_CONCURRENCY
 
 logger = logging.getLogger("root")
 
 MONITOR_INTERVAL = 1
+CELERY_CONCURRENCY = int(CELERY_CONCURRENCY)
 
 
 def start_monitor(queue_info: QueueInfo):
     resume_consuming(queue_info)  # restore the default state in case the previous run ended in paused state
-    nvmlInit()
-    monitor_gpu = True
-    try:
-        device_count = nvmlDeviceGetCount()
-        if device_count > 1:
-            logger.error("[MONITOR] More than one GPU is not supported")
-            monitor_gpu = False
-        if device_count == 0:
-            logger.error("[MONITOR] No supported GPU is found")
-            monitor_gpu = False
-    except NVMLError:
-        monitor_gpu = False
-    if monitor_gpu:
-        handle = nvmlDeviceGetHandleByIndex(0)
-        device_name = nvmlDeviceGetName(handle)
-        logger.info(f"[MONITOR] Monitoring GPU: {device_name}")
+    # nvmlInit()
+    # monitor_gpu = True
+    # try:
+    #     device_count = nvmlDeviceGetCount()
+    #     if device_count > 1:
+    #         logger.error("[MONITOR] More than one GPU is not supported")
+    #         monitor_gpu = False
+    #     if device_count == 0:
+    #         logger.error("[MONITOR] No supported GPU is found")
+    #         monitor_gpu = False
+    # except NVMLError:
+    #     monitor_gpu = False
+    # if monitor_gpu:
+    #     handle = nvmlDeviceGetHandleByIndex(0)
+    #     device_name = nvmlDeviceGetName(handle)
+    #     logger.info(f"[MONITOR] Monitoring GPU: {device_name}")
     paused = False  # TODO: only pause when the constraint is violated for multiple checks
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
     socket.connect(f"tcp://localhost:{ZMQ_PORT}")
     while True:
-        free_memory = psutil.virtual_memory().available / (1024 * 1024)  # free memory (MiB)
-        free_cpu = 100 - psutil.cpu_percent()  # cpu utlization (%)
-        # per_cpu = psutil.cpu_percent(percpu=True)
-        if monitor_gpu:
-            # free_gpu = 100 - nvmlDeviceGetUtilizationRates(handle).gpu
-            mem_info = nvmlDeviceGetMemoryInfo(handle)
-            free_vram = mem_info.free // (1024 * 1024)  # in MiB
-            proc_info = nvmlDeviceGetComputeRunningProcesses(handle)
-            encoded_proc_info = []
-            for info in proc_info:
-                encoded_proc_info.append({
-                    "pid": info.pid,
-                    "vram": info.usedGpuMemory,
-                })
-            socket.send_pyobj(
-                {
-                    "message_type": "monitor-update",
-                    "payload": encoded_proc_info,
-                }
-            )
-            _ = socket.recv()
+        # TODO: check for number of processes (max user processes = 64)
+        num_running_processes = len([process.pid for process in psutil.process_iter() if 
+            process.username().lower() == 'cs5446'])
         if not paused:
-            if free_memory < queue_info.ram:
+            if num_running_processes + CELERY_CONCURRENCY + PROCESS_BUFFER >= MAX_PROCESS_NUM and MAX_PROCESS_NUM is not None:
                 paused = True
                 logger.info(
-                    f"[MONITOR] Paused due to insufficient memory: have {free_memory}MiB, need {queue_info.ram}MiB")
+                    f"[MONITOR] Paused due to too many processes running: have {num_running_processes} processes running, with a Celery concurrency of {CELERY_CONCURRENCY}, a buffer of {PROCESS_BUFFER} and a max limit of {MAX_PROCESS_NUM}")
                 stop_consuming(queue_info)
-            elif free_cpu < queue_info.cpu:
-                paused = True
-                logger.info(f"[MONITOR] Paused due to insufficient CPU: have {free_cpu}%, need {queue_info.cpu}%")
-                stop_consuming(queue_info)
-            elif monitor_gpu:
-                if free_vram < queue_info.vram:
-                    paused = True
-                    logger.info(
-                        f"[MONITOR] Paused due to insufficient VRAM: have {free_vram}MiB, need {queue_info.vram}MiB")
-                    stop_consuming(queue_info)
         else:
-            if free_memory >= queue_info.ram and free_cpu >= queue_info.cpu \
-                    and (not monitor_gpu or (free_vram >= queue_info.vram)):
+            if num_running_processes + CELERY_CONCURRENCY + PROCESS_BUFFER < MAX_PROCESS_NUM and MAX_PROCESS_NUM is not None:
                 paused = False
                 logger.info("[MONITOR] Operation resumed")
                 resume_consuming(queue_info)
+        # free_memory = psutil.virtual_memory().available / (1024 * 1024)  # free memory (MiB)
+        # free_cpu = 100 - psutil.cpu_percent()  # cpu utlization (%)        
+        # per_cpu = psutil.cpu_percent(percpu=True)
+        # if monitor_gpu:
+        #     # free_gpu = 100 - nvmlDeviceGetUtilizationRates(handle).gpu
+        #     mem_info = nvmlDeviceGetMemoryInfo(handle)
+        #     free_vram = mem_info.free // (1024 * 1024)  # in MiB
+        #     proc_info = nvmlDeviceGetComputeRunningProcesses(handle)
+        #     encoded_proc_info = []
+        #     for info in proc_info:
+        #         encoded_proc_info.append({
+        #             "pid": info.pid,
+        #             "vram": info.usedGpuMemory,
+        #         })
+        #     socket.send_pyobj(
+        #         {
+        #             "message_type": "monitor-update",
+        #             "payload": encoded_proc_info,
+        #         }
+        #     )
+        #     _ = socket.recv()
+        # if not paused:
+        #     if free_memory < queue_info.ram:
+        #         paused = True
+        #         logger.info(
+        #             f"[MONITOR] Paused due to insufficient memory: have {free_memory}MiB, need {queue_info.ram}MiB")
+        #         stop_consuming(queue_info)
+        #     elif free_cpu < queue_info.cpu:
+        #         paused = True
+        #         logger.info(f"[MONITOR] Paused due to insufficient CPU: have {free_cpu}%, need {queue_info.cpu}%")
+        #         stop_consuming(queue_info)
+        #     elif monitor_gpu:
+        #         if free_vram < queue_info.vram:
+        #             paused = True
+        #             logger.info(
+        #                 f"[MONITOR] Paused due to insufficient VRAM: have {free_vram}MiB, need {queue_info.vram}MiB")
+        #             stop_consuming(queue_info)
+        # else:
+        #     if free_memory >= queue_info.ram and free_cpu >= queue_info.cpu \
+        #             and (not monitor_gpu or (free_vram >= queue_info.vram)):
+        #         paused = False
+        #         logger.info("[MONITOR] Operation resumed")
+        #         resume_consuming(queue_info)
         time.sleep(MONITOR_INTERVAL)
 
 
