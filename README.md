@@ -8,8 +8,8 @@
 4. `python -m pip install wheel`
 5. Follow "Setup" instructions at https://github.com/edu-ai/aivle-web but `python manage.py makemigrations app scheduler` under Step 4
 6. Follow "Deploying Backend" instructions at https://github.com/edu-ai/aivle-docs/blob/master/docs/dev-guide/deployment-guide.md
-7. Set `debug=False` in `aiVLE/settings.py` for safe deployment
-8. Run server with `python manage.py runserver 0.0.0.0:8000`
+7. Set `debug=False` and add server URL to `ALLOWED_HOSTS` in `aiVLE/settings.py` for safe deployment
+8. Run server with `python manage.py runserver`
 
 ### Usage
 1. Create Courses
