@@ -74,7 +74,7 @@ def run_with_venv(env_name: str, command: List[str], task_id: int, job_id: int, 
         fh.writelines("#SBATCH --job-name=%s_%s\n" % (env_name.replace(' ', '_'), str(job_id)))
         fh.writelines("#SBATCH --output=%s\n" % os.path.join(home, "log.out"))
         fh.writelines("#SBATCH --partition=medium\n")
-        fh.writelines("#SBATCH --time=%s:%s\n" % (str(int(time_limit / 60)), str(time_limit % 60)))
+        fh.writelines("#SBATCH --time=%s:%s\n" % (str(int(time_limit / 60)), str(time_limit % 60).zfill(2)))
         fh.writelines("#SBATCH --ntasks=1\n")
         fh.writelines("#SBATCH --cpus-per-task=1\n")
         fh.writelines("#SBATCH --mem=%s\n" % (str(rlimit)))
