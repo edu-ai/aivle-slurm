@@ -30,15 +30,17 @@
 8. Get `ACCESS_TOKEN` using the aivLE Web admin backend under "Tokens" (make sure the user with the token has admin role for "Participations" in intended "Courses")
 9. Run server with `python -m aivle_worker`
 
-### New Task Setup
-1. Add new task to "Tasks" with task_name in the aiVLE Web Backend
-2. `cd TEMP_FOLDER_ROOT/venvs/`
-3. `python -m venv <task_name>`
-4. `source <task_name>/bin/activate`
-5. Install aiVLE Grader, aiVLE Gym and their required dependencies (locally with `--use-pep517`)
-6. Add task function to `aivle_worker/aivle_worker/tasks.py`
-
 
 ## aiVLE Web Frontend
 1. `git clone https://github.com/le0tan/aivle-fe`
 2. Follow "Deploy Frontend (aiVLE FE)" instructions at https://yuanhong.larksuite.com/docx/doxusHWd5rNVi1qjvgw611wB3de
+
+
+## New Task Setup
+1. Add new task to "Tasks" with task_name in the aiVLE Web Backend
+2. `cd TEMP_FOLDER_ROOT/venvs/`
+3. `python -m venv <task_name>`
+4. `source <task_name>/bin/activate`
+5. Install aiVLE Grader, aiVLE Gym and their required dependencies (locally with `--use-pep517` if necessary)
+6. Add task function to `aivle_worker/aivle_worker/tasks.py`
+7. Add task function to `aivle_web/scheduler/celery_app.py`
