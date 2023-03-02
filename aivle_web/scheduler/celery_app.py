@@ -20,6 +20,10 @@ app.conf.task_queues = (
 )
 
 
-@app.task(bind=True, name="aiVLE.submit_eval_task")
+@app.task(bind=True, name="Value Iteration")
 def evaluate(self, job_id):
     pass
+
+# @app.task(bind=True, name="aiVLE.submit_eval_task")
+# def evaluate(self, job_id):
+#     pass
