@@ -108,12 +108,15 @@ class JobViewSet(ReadOnlyModelViewSet):
                 # NOTE: changed
                 # obj = pickle.loads(literal_eval(result))
                 obj = result
-                score = obj["results"][0]["result"]["value"]
+                results = obj["results"]
+                neat_results = {"case_id_%s" % result["case_id"]: {"result": result["result"]["value"], "error": result["result"]["error"]} for result in results}
+                scores = [result["result"]["value"] for result in results]
+                score = sum(scores) / len(scores)
                 other_submissions = Submission.objects.filter(task=job.submission.task, user=job.submission.user)
                 prev_highest_score = other_submissions.aggregate(Max("point"))["point__max"]
                 submission = job.submission
                 submission.point = score
-                submission.notes = str(obj)
+                submission.notes = str(neat_results)
                 # By default, mark latest highest scoring submission for grading
                 if prev_highest_score is None or prev_highest_score <= score:
                     for other_submission in other_submissions:
