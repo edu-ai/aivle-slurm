@@ -44,3 +44,10 @@
 5. Install aiVLE Grader, aiVLE Gym and their required dependencies (locally with `--use-pep517` if necessary)
 6. Add task function to `aivle_worker/aivle_worker/tasks.py`
 7. Add task function to `aivle_web/scheduler/celery_app.py`
+
+
+## aiVLE Redeployment After NUS Maintenance
+1. Wait for aiVLE Web's server to be up along with the RabbitMQ server.
+2. Restart aiVLE Web.
+3. Get permission for aiVLE Worker to connect to aiVLE Web if necessary.
+4. Get permission for aiVLE Worker to connect to the RabbitMQ server if necessary.
